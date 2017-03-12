@@ -195,11 +195,6 @@ typedef enum {
      * after all uses have been updated from 0 to the appropriate symbol, and have been tested.
      */
     AUDIO_SESSION_ALLOCATE = 0,
-
-    /* For use with AudioRecord::start(), this indicates no trigger session.
-     * It is also used with output tracks and patch tracks, which never have a session.
-     */
-    AUDIO_SESSION_NONE = 0,
 } audio_session_t;
 
 /* a unique ID allocated by AudioFlinger for use as a audio_io_handle_t or audio_session_t */
