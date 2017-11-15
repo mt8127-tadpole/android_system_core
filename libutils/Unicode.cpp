@@ -190,7 +190,9 @@ ssize_t utf32_to_utf8_length(const char32_t *src, size_t src_len)
             // If this happens, we would overflow the ssize_t type when
             // returning from this function, so we cannot express how
             // long this string is in an ssize_t.
+            /* temp fix for build error
             android_errorWriteLog(0x534e4554, "37723026");
+            */
             return -1;
         }
         ret += char_len;
@@ -442,7 +444,9 @@ ssize_t utf16_to_utf8_length(const char16_t *src, size_t src_len)
             // If this happens, we would overflow the ssize_t type when
             // returning from this function, so we cannot express how
             // long this string is in an ssize_t.
+            /* temp fix for build error 
             android_errorWriteLog(0x534e4554, "37723026");
+            */
             return -1;
         }
         ret += char_len;
