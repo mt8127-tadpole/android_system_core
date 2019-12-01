@@ -28,7 +28,11 @@
 #include <sys/types.h>
 
 #include <linux/ion.h>
+#include <linux/mtk_ion.h>
+#include <libion_mtk/ion.h>
+#include <linux/ion_drv.h>
 #include <ion/ion.h>
+#include <string.h>
 
 int ion_open()
 {
@@ -174,3 +178,100 @@ int ion_sync_fd(int fd, int handle_fd)
     };
     return ion_ioctl(fd, ION_IOC_SYNC, &data);
 }
+
+static int ion_set_client_name(int ion_fd, const char *name)
+{
+    int ret;
+    ion_sys_data_t sys_data;
+
+    sys_data.sys_cmd = ION_SYS_SET_CLIENT_NAME;
+
+    strncpy(sys_data.client_name_param.name, name, sizeof(sys_data.client_name_param.name)-1);
+
+    if(ion_custom_ioctl(ion_fd, ION_CMD_SYSTEM, &sys_data))
+    {
+        //config error
+        ALOGE("[ion_dbg] ion_set_client_name error\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+int mt_ion_open(const char *name)
+{
+    int fd;
+    fd = ion_open();
+    if(fd < 0)
+    {
+        ALOGE("ion_open failed! name=%s\n", name);
+        return fd;
+    }
+
+    ion_set_client_name(fd, name);
+    return fd;
+}
+
+int ion_alloc_mm(int fd, size_t len, size_t align, unsigned int flags,
+              ion_user_handle_t *handle)
+{
+
+        return ion_alloc(fd, len, align, ION_HEAP_MULTIMEDIA_MASK, flags, handle);
+}
+
+int ion_alloc_syscontig(int fd, size_t len, size_t align, unsigned int flags, ion_user_handle_t *handle)
+{
+
+        return ion_alloc(fd, len, align, ION_HEAP_SYSTEM_CONTIG_MASK, flags, handle);
+}
+
+void* ion_mmap(int fd, void *addr, size_t length, int prot, int flags, int share_fd, off_t offset)
+{
+    void *mapping_address = NULL;
+
+    mapping_address =  mmap(addr, length, prot, flags, share_fd, offset);
+
+    if (mapping_address == MAP_FAILED) {
+        ALOGE("ion_mmap failed fd = %d, addr = 0x%p, len = %zu, prot = %d, flags = %d, share_fd = %d, 0x%p: %s\n", fd, addr, length,
+              prot, flags, share_fd, mapping_address, strerror(errno));
+    }
+
+    return mapping_address;
+}
+
+int ion_munmap(int fd, void *addr, size_t length)
+{
+    int ret = munmap(addr, length);
+
+    if (ret < 0) {
+        ALOGE("ion_munmap failed fd = %d, addr = 0x%p, len = %zu, %d: %s\n", fd, addr, length,
+              ret, strerror(errno));
+    }
+    return ret;
+}
+
+int ion_share_close(int fd, int share_fd)
+{
+    int ret = close(share_fd);
+    if (ret < 0) {
+        ALOGE("ion_share_close failed fd = %d, share_fd = %d, %d: %s\n", fd, share_fd,
+              ret, strerror(errno));
+    }
+    return ret;
+}
+
+int ion_custom_ioctl(int fd, unsigned int cmd, void* arg)
+{
+    struct ion_custom_data custom_data;
+    custom_data.cmd = cmd;
+    custom_data.arg = (unsigned long) arg;
+
+    int ret = ioctl(fd, ION_IOC_CUSTOM, &custom_data);
+    if (ret < 0) {
+        ALOGE("ion_custom_ioctl %x failed with code %d: %s\n", ION_IOC_CUSTOM,
+              ret, strerror(errno));
+        return -errno;
+    }
+    return ret;
+}
+

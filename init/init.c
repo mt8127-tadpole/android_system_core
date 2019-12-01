@@ -770,6 +770,8 @@ static void export_kernel_boot_props(void)
         { "ro.boot.mode", "ro.bootmode", "unknown", },
         { "ro.boot.baseband", "ro.baseband", "unknown", },
         { "ro.boot.bootloader", "ro.bootloader", "unknown", },
+// set for init.mt8127.rc
+        { "ro.boot.hardware",   "ro.hardware",   "mt8127", },
     };
 
     for (i = 0; i < ARRAY_SIZE(prop_map); i++) {
@@ -927,6 +929,8 @@ static bool selinux_is_disabled(void)
 static bool selinux_is_enforcing(void)
 {
 #ifdef ALLOW_DISABLE_SELINUX
+    /* things are getting hairier... disable during initial porting */
+    return false;
     char tmp[PROP_VALUE_MAX];
 
     if (property_get("ro.boot.selinux", tmp) == 0) {

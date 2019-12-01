@@ -90,6 +90,9 @@ ifeq ($(TARGET_ARCH),mips)
 LOCAL_CFLAGS += -DALIGN_DOUBLE
 endif
 LOCAL_CFLAGS += -Werror
+ifeq ($(BOARD_HAS_MTK_HARDWARE),true)  
+LOCAL_SRC_FILES += MediatekHacks.cpp  
+endif
 
 LOCAL_C_INCLUDES += \
 		bionic/libc \
